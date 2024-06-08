@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.backend.picpaysimplificado.desafiopicpay.domain.users.entity.UsersEntities;
+import com.backend.picpaysimplificado.desafiopicpay.domain.users.entity.UsersEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,11 +34,11 @@ public class TransactionEntity {
 
     @ManyToOne
     @JoinColumn(name = "sender_id")
-    private UsersEntities sender;
+    private UsersEntity sender;
 
     @ManyToOne
     @JoinColumn(name = "receiver_id")
-    private UsersEntities receiver;
+    private UsersEntity receiver;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
