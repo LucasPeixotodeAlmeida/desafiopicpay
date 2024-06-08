@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.backend.picpaysimplificado.desafiopicpay.domain.users.enums.UserTypeEnum;
+import com.backend.picpaysimplificado.desafiopicpay.dto.users.UsersDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,4 +44,14 @@ public class UsersEntity {
 
     @Enumerated(EnumType.STRING)
     private UserTypeEnum userType;
+
+    public UsersEntity(UsersDTO data){
+        this.firstName = data.firstName();
+        this.lastName = data.lastName();
+        this.document = data.document();
+        this.balance = data.balance();
+        this.email = data.email();
+        this.password = data.password();
+        this.userType = data.userType();
+    }
 }
