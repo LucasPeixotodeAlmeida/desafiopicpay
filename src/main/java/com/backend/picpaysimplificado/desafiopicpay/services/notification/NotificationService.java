@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.backend.picpaysimplificado.desafiopicpay.domain.dto.notification.NotificationDTO;
 import com.backend.picpaysimplificado.desafiopicpay.domain.users.entity.UsersEntity;
+import com.backend.picpaysimplificado.desafiopicpay.dto.notification.NotificationDTO;
 
 @Service
 public class NotificationService {

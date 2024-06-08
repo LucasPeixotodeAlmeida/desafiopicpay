@@ -1,4 +1,4 @@
-package com.backend.picpaysimplificado.desafiopicpay.domain.infra;
+package com.backend.picpaysimplificado.desafiopicpay.infra;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

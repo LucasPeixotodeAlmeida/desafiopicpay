@@ -10,9 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.backend.picpaysimplificado.desafiopicpay.domain.dto.transaction.TransactionDTO;
 import com.backend.picpaysimplificado.desafiopicpay.domain.transaction.entity.TransactionEntity;
 import com.backend.picpaysimplificado.desafiopicpay.domain.users.entity.UsersEntity;
+import com.backend.picpaysimplificado.desafiopicpay.dto.transaction.TransactionDTO;
 import com.backend.picpaysimplificado.desafiopicpay.repositories.transaction.TransactionRepository;
 import com.backend.picpaysimplificado.desafiopicpay.services.users.UsersService;
 

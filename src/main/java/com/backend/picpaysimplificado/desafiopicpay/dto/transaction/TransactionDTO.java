@@ -1,4 +1,4 @@
-package com.backend.picpaysimplificado.desafiopicpay.domain.dto.transaction;
+package com.backend.picpaysimplificado.desafiopicpay.dto.transaction;
 
 import java.math.BigDecimal;
 import java.util.UUID;
