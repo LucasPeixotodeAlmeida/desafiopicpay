@@ -11,7 +11,7 @@ import com.backend.picpaysimplificado.desafiopicpay.domain.users.enums.UserTypeE
 import com.backend.picpaysimplificado.desafiopicpay.repositories.users.UsersRepository;
 
 @Service
-public class usersService {
+public class UsersService {
     @Autowired
     private UsersRepository usersRepository;
 
