@@ -12,10 +12,13 @@ import org.springframework.web.client.RestTemplate;
 
 import com.backend.picpaysimplificado.desafiopicpay.domain.transaction.entity.TransactionEntity;
 import com.backend.picpaysimplificado.desafiopicpay.domain.users.entity.UsersEntity;
+import com.backend.picpaysimplificado.desafiopicpay.domain.users.enums.UserTypeEnum;
 import com.backend.picpaysimplificado.desafiopicpay.dto.transaction.TransactionDTO;
 import com.backend.picpaysimplificado.desafiopicpay.repositories.transaction.TransactionRepository;
 import com.backend.picpaysimplificado.desafiopicpay.services.notification.NotificationService;
 import com.backend.picpaysimplificado.desafiopicpay.services.users.UsersService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class TransactionService {
@@ -31,44 +34,70 @@ public class TransactionService {
     @Autowired
     private NotificationService notificationService;
 
-    public TransactionEntity createTransaction(TransactionDTO transaction) throws Exception{
-        UsersEntity sender = this.usersService.findUsersById(transaction.senderId());
-        UsersEntity receiver = this.usersService.findUsersById(transaction.receiverId());
+    @Transactional
+public TransactionEntity createTransaction(TransactionDTO transaction) throws Exception {
+    UsersEntity sender = this.usersService.findUsersById(transaction.senderId());
+    UsersEntity receiver = this.usersService.findUsersById(transaction.receiverId());
 
-        usersService.validateTransaction(sender, transaction.amount());
+    if (sender.getUserType() == UserTypeEnum.MERCHANT) {
+        throw new Exception("Lojistas não estão autorizados a realizar transações!");
+    }
 
-        boolean isAuthorized = this.authorizeTransaction(sender, transaction.amount());
+    usersService.validateTransaction(sender, transaction.amount());
 
-        if (!isAuthorized) {
-            throw new Exception("Transação não autorizada");
-        }
+    boolean isAuthorized = this.authorizeTransaction(sender, transaction.amount());
 
-        TransactionEntity newTransaction = new TransactionEntity();
-        newTransaction.setAmount(transaction.amount());
-        newTransaction.setSender(sender);
-        newTransaction.setReceiver(receiver);
-        newTransaction.setCreatedAt(LocalDateTime.now());
+    if (!isAuthorized) {
+        throw new Exception("Transação não autorizada");
+    }
 
-        sender.setBalance(sender.getBalance().subtract(transaction.amount()));
-        receiver.setBalance(receiver.getBalance().add(transaction.amount()));
+    TransactionEntity newTransaction = new TransactionEntity();
+    newTransaction.setAmount(transaction.amount());
+    newTransaction.setSender(sender);
+    newTransaction.setReceiver(receiver);
+    newTransaction.setCreatedAt(LocalDateTime.now());
 
-        this.transactionRepository.save(newTransaction);
-        this.usersService.saveUsers(sender);
-        this.usersService.saveUsers(receiver);
+    sender.setBalance(sender.getBalance().subtract(transaction.amount()));
+    receiver.setBalance(receiver.getBalance().add(transaction.amount()));
 
+    this.transactionRepository.save(newTransaction);
+    this.usersService.saveUsers(sender);
+    this.usersService.saveUsers(receiver);
+
+    try {
         this.notificationService.sendNotification(sender, "Transação realizada com sucesso");
         this.notificationService.sendNotification(receiver, "Transação recebida com sucesso");
-
-        return newTransaction;
-
+    } catch (Exception e) {
+        throw new RuntimeException("Erro ao enviar notificações, a transação foi revertida.", e);
     }
 
-    public boolean authorizeTransaction(UsersEntity sender, BigDecimal amount){
-       ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
+    return newTransaction;
+}
 
-       if (authorizationResponse.getStatusCode() == HttpStatus.OK) {
-            String status = (String) authorizationResponse.getBody().get("status");
-            return "success".equalsIgnoreCase("status");
-       }else return false;
+public boolean authorizeTransaction(UsersEntity sender, BigDecimal amount) {
+    ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
+
+    if (authorizationResponse.getStatusCode() == HttpStatus.OK) {
+        Map<String, Object> responseBody = authorizationResponse.getBody();
+        if (responseBody != null) {
+            String status = (String) responseBody.get("status");
+            Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+            boolean authorization = data != null && (boolean) data.get("authorization");
+
+            if ("success".equalsIgnoreCase(status) && authorization) {
+                return true;
+            } else {
+                System.out.println("Authorization failed: " + responseBody);
+                return false;
+            }
+        } else {
+            System.out.println("Response body is null");
+            return false;
+        }
+    } else {
+        System.out.println("Authorization request failed with status: " + authorizationResponse.getStatusCode());
+        return false;
     }
+}
+
 }
