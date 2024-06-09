@@ -18,7 +18,7 @@ public class UsersService {
     private UsersRepository usersRepository;
 
     public void validateTransaction(UsersEntity sender, BigDecimal amount) throws Exception{
-        if(sender.getUserType() != UserTypeEnum.MERCHANT){
+        if(sender.getUserType() != UserTypeEnum.COMMON){
             throw new Exception("Lojistas não estão autorizados a relizar transações!");
         }
 
