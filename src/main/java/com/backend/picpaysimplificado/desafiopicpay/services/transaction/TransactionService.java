@@ -14,6 +14,7 @@ import com.backend.picpaysimplificado.desafiopicpay.domain.transaction.entity.Tr
 import com.backend.picpaysimplificado.desafiopicpay.domain.users.entity.UsersEntity;
 import com.backend.picpaysimplificado.desafiopicpay.dto.transaction.TransactionDTO;
 import com.backend.picpaysimplificado.desafiopicpay.repositories.transaction.TransactionRepository;
+import com.backend.picpaysimplificado.desafiopicpay.services.notification.NotificationService;
 import com.backend.picpaysimplificado.desafiopicpay.services.users.UsersService;
 
 @Service
@@ -27,7 +28,10 @@ public class TransactionService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public void createTransaction(TransactionDTO transaction) throws Exception{
+    @Autowired
+    private NotificationService notificationService;
+
+    public TransactionEntity createTransaction(TransactionDTO transaction) throws Exception{
         UsersEntity sender = this.usersService.findUsersById(transaction.senderId());
         UsersEntity receiver = this.usersService.findUsersById(transaction.receiverId());
 
@@ -51,6 +55,11 @@ public class TransactionService {
         this.transactionRepository.save(newTransaction);
         this.usersService.saveUsers(sender);
         this.usersService.saveUsers(receiver);
+
+        this.notificationService.sendNotification(sender, "Transação realizada com sucesso");
+        this.notificationService.sendNotification(receiver, "Transação recebida com sucesso");
+
+        return newTransaction;
 
     }
 
